@@ -1,0 +1,124 @@
+buildscript {
+
+    repositories {
+        maven { url "https://nexus.nee.com/repository/fplcom-group/"  }
+    }
+
+    dependencies {
+		classpath "com.fplws.gradle:aws_war_plugin:${gradle.ext.warPluginVersion}"
+    }
+}
+
+apply plugin: 'com.fplws.gradle.fplcom-aws-war'
+
+
+configurations {
+    all*.exclude module: 'spring-boot-starter-logging'
+}
+
+dependencies {
+
+	// Fpl.com dependencies
+	
+	compile 'com.fplws.common.framework:fpl-common-logging:+'
+	compile 'com.fplws.common.framework:fpl-common-framework:+'
+	compile 'com.fplws.external:fplcom_common:+'	// Temporarily, until this version is migrated with latest of fpl.com
+	compile ('com.fplws.external:fplcom_servicedata:+') { transitive = false } // Temporarily, until this version is migrated with latest of fpl.com
+	compile 'com.fplws.common.aws:fpl-common-aws:+'
+	compile 'com.fplws.mf.payonline:fpl-mf-payonlinek97a:+'	
+	compile 'com.fplws.mf.rcsinformation:fpl-mf-rcsInformationk359:+'
+	compile 'com.fpl.fplcom.api:ExternalUserFramework:+'
+	
+	// 3rd party dependencies
+						
+    implementation('org.springframework.boot:spring-boot-starter-actuator')
+    implementation('org.springframework.boot:spring-boot-starter-web')
+	//providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
+    implementation('io.springfox:springfox-swagger-ui:2.9.2')
+    implementation('io.springfox:springfox-swagger2:2.9.2')
+    testImplementation('org.springframework.boot:spring-boot-starter-test')
+
+
+    //api-core-logging dependencies (will be removed in later stage once moved to nexus)
+    compile "org.apache.logging.log4j:log4j-slf4j-impl:2.11.2"
+    compile "org.apache.logging.log4j:log4j-api:2.11.2"
+    compile "org.apache.logging.log4j:log4j-core:2.11.2"
+    compile "org.slf4j:jcl-over-slf4j:1.7.25"
+    compile "org.slf4j:jul-to-slf4j:1.7.25"
+    compile group: 'com.fasterxml.jackson.core', name : 'jackson-databind', version:'2.9.9.3'
+
+    //fpl-common-framework dependencies (will be removed in later stage once moved to nexus)
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.8'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.9.8'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-joda:2.9.8'
+
+    compile 'commons-io:commons-io:2.1'
+    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5'
+    compile 'joda-time:joda-time:2.9.9'
+    compile 'commons-codec:commons-codec:1.10'
+
+    //FPL jars
+    compile 'org.codehaus.jackson:jackson-mapper-asl:1.7.7'
+
+    //other jars
+    compile 'net.sf.dozer:dozer:5.5.1'
+    compile 'org.apache.bval:org.apache.bval.bundle:2.0.2'
+    compile group: 'javax.resource', name: 'javax.resource-api', version: '1.7'
+    compile group: 'org.json', name: 'json', version: '20180813'
+    compile group: 'com.amazonaws', name: 'aws-java-sdk', version: '1.11.570'
+
+	// https://mvnrepository.com/artifact/com.auth0/java-jwt
+	compile 'com.auth0:jwks-rsa:0.11.0'
+	compile 'com.auth0:java-jwt:3.10.3'
+    compile 'com.fplws.common.util.nacha:fpl-nacha-util-cloud:+'
+
+}
+
+sonarqube {
+    def projectKey = "com.nee.fpl.fpl.com-payment-services-api"
+    properties {
+
+        // The project's unique key. Allowed characters are: letters, numbers, -, _, . and :, with at least one 
+        // non-digit. NEE has a specific format for project keys. See:
+        // https://confluence.nexteraenergy.com/display/ESONARQ/Adding+a+project+to+the+SonarQube+server#AddingaprojecttotheSonarQubeserver-projectKey
+        property "sonar.projectKey", "${projectKey}"
+
+        // Name of the project that will be displayed on the web interface.
+        // NEE has specific guidelines for project naming.  See:
+        // https://confluence.nexteraenergy.com/display/ESONARQ/Adding+a+project+to+the+SonarQube+server#AddingaprojecttotheSonarQubeserver-projectName
+        property "sonar.projectName", "Fpl.com Payment Services API"
+
+        // Project home page. Used to hold contact information for use by the SonarQube administrators.
+        // See https://docs.sonarqube.org/latest/analysis/analysis-parameters/
+        // If the SonarQube administrators have this information, the link should be:
+        // https://sonarqube.nexteraenergy.com/nee/project/view/${projectKey}
+        property "sonar.links.homepage", "https://sonarqube.nexteraenergy.com/nee/project/view/${projectKey}"
+
+        // Project source repository.  Bitbucket browse URL is preferred.
+        // See https://docs.sonarqube.org/latest/analysis/analysis-parameters/
+        property "sonar.links.scm", "http://neer-bitbucket:7990/projects/DR/repos/fpl-payment-services/browse"
+
+        // Encoding of the source files. Ex: UTF-8, MacRoman, Shift_JIS.
+        // See https://docs.sonarqube.org/latest/analysis/analysis-parameters/
+        property "sonar.sourceEncoding", "UTF-8"
+   
+        // Comma-separated paths to source files and directories containing source files.
+        // See https://docs.sonarqube.org/latest/analysis/analysis-parameters/
+        property "sonar.sources", "cf-templates,gradle,gradle.properties,aws_config.groovy,src/main"
+
+        // Comma-separated paths to source files and directories containing test source files.
+        // See https://docs.sonarqube.org/latest/analysis/analysis-parameters/
+        property "sonar.tests", "src/test"
+
+		// Comma-delimited list of paths to CloudFormation report files (.nag,.nagscan).
+		// Paths may be absolute or relative to project root.
+		// See https://github.com/Hack23/sonar-cloudformation-plugin
+		// See cfn_nag_scan command used: cfn_nag_scan -i cf-templates/service.yml -o json -> reports/cfn-nag-scan.nagscan
+        property "sonar.cfn.nag.reportFiles", "reports/cfn-nag-scan.nagscan"
+		
+        // The SCM provider (git, subversion, etc.).  Explicitly defined here because auto-detection sometimes
+        // fails, resulting in a loss of SCM blame data in SonarQube.  The value should be lowercased.
+        // See https://docs.sonarqube.org/latest/analysis/analysis-parameters/
+        property "sonar.scm.provider", "git"		
+    }
+}
